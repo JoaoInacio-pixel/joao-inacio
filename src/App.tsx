@@ -89,7 +89,7 @@ const skills = [
 
 const Navbar = () => (
   <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-6 glass border-b border-zinc-100">
-    <div className="text-xl font-serif italic tracking-tighter">Portfolio.Econ</div>
+    <div className="text-xl italic tracking-tighter">Portfolio.Econ</div>
     <div className="hidden md:flex gap-8 text-xs uppercase tracking-widest font-medium text-zinc-500">
       <a href="#about" className="hover:text-black transition-colors">Sobre</a>
       <a href="#services" className="hover:text-black transition-colors">O que faço</a>
@@ -106,7 +106,7 @@ const SectionTitle = ({ title, subtitle }: { title: string, subtitle?: string })
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="text-4xl md:text-5xl font-serif mb-4"
+      className="text-4xl md:text-5xl mb-4"
     >
       {title}
     </motion.h2>
@@ -140,7 +140,7 @@ export default function App() {
             <span className="text-xs uppercase tracking-[0.3em] font-semibold text-zinc-400 mb-6 block">
               Estudante de Economia
             </span>
-            <h1 className="text-6xl md:text-8xl font-serif leading-[0.9] mb-8 tracking-tighter">
+            <h1 className="text-6xl md:text-8xl leading-[0.9] mb-8 tracking-tighter">
               Lucas <br /> <span className="italic">Menezes</span>
             </h1>
             <p className="text-xl md:text-2xl font-light text-zinc-500 mb-10 max-w-lg leading-relaxed">
@@ -214,19 +214,19 @@ export default function App() {
             
             <div className="grid grid-cols-2 gap-8">
               <div className="p-8 bg-white rounded-3xl border border-zinc-100 shadow-sm">
-                <div className="text-4xl font-serif mb-2">04+</div>
+                <div className="text-4xl mb-2">04+</div>
                 <div className="text-xs uppercase tracking-widest text-zinc-400 font-semibold">Anos de Estudo</div>
               </div>
               <div className="p-8 bg-white rounded-3xl border border-zinc-100 shadow-sm">
-                <div className="text-4xl font-serif mb-2">15+</div>
+                <div className="text-4xl mb-2">15+</div>
                 <div className="text-xs uppercase tracking-widest text-zinc-400 font-semibold">Projetos de Dados</div>
               </div>
               <div className="p-8 bg-white rounded-3xl border border-zinc-100 shadow-sm">
-                <div className="text-4xl font-serif mb-2">02</div>
+                <div className="text-4xl mb-2">02</div>
                 <div className="text-xs uppercase tracking-widest text-zinc-400 font-semibold">Idiomas Fluentes</div>
               </div>
               <div className="p-8 bg-white rounded-3xl border border-zinc-100 shadow-sm">
-                <div className="text-4xl font-serif mb-2">A+</div>
+                <div className="text-4xl mb-2">A+</div>
                 <div className="text-xs uppercase tracking-widest text-zinc-400 font-semibold">Excelência Acadêmica</div>
               </div>
             </div>
@@ -271,7 +271,7 @@ export default function App() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
             <div>
               <span className="text-xs uppercase tracking-[0.3em] font-semibold text-zinc-500 mb-6 block">Expertise</span>
-              <h2 className="text-4xl md:text-6xl font-serif mb-8 leading-tight">Habilidades & <br /> <span className="italic">Competências</span></h2>
+              <h2 className="text-4xl md:text-6xl mb-8 leading-tight">Habilidades & <br /> <span className="italic">Competências</span></h2>
               <p className="text-zinc-400 text-lg font-light leading-relaxed mb-12">
                 Domínio de ferramentas quantitativas e qualitativas essenciais para o economista moderno, com foco em automação e precisão.
               </p>
@@ -335,7 +335,7 @@ export default function App() {
                     {indicator.change}
                   </span>
                 </div>
-                <div className="text-3xl font-serif mb-6">{indicator.value}</div>
+                <div className="text-3xl mb-6">{indicator.value}</div>
                 <div className="h-12 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={indicator.sparkline.map((v, idx) => ({ v, idx }))}>
@@ -362,7 +362,7 @@ export default function App() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="p-10 bg-soft-gray rounded-[2.5rem] border border-zinc-100">
-              <h3 className="text-2xl font-serif mb-8">Crescimento do PIB Global (%)</h3>
+              <h3 className="text-2xl mb-8">Crescimento do PIB Global (%)</h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={globalGrowthData}>
@@ -386,7 +386,7 @@ export default function App() {
             </div>
 
             <div className="p-10 bg-white rounded-[2.5rem] border border-zinc-100 shadow-sm">
-              <h3 className="text-2xl font-serif mb-8">Tendências de Commodities</h3>
+              <h3 className="text-2xl mb-8">Tendências de Commodities</h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={[
