@@ -1,13 +1,13 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { 
-  TrendingUp, 
-  BarChart3, 
-  Globe2, 
-  Leaf, 
-  Download, 
-  Mail, 
-  Linkedin, 
+import {
+  TrendingUp,
+  BarChart3,
+  Globe2,
+  Leaf,
+  Download,
+  Mail,
+  Linkedin,
   Instagram,
   ArrowRight,
   ChevronUp,
@@ -16,15 +16,15 @@ import {
   Cpu,
   LineChart as LineChartIcon
 } from 'lucide-react';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  AreaChart, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  AreaChart,
   Area,
   BarChart,
   Bar
@@ -89,7 +89,7 @@ const skills = [
 
 const Navbar = () => (
   <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-6 glass border-b border-zinc-100">
-    <div className="text-xl italic tracking-tighter">Portfolio.Econ</div>
+    <div className="text-xl italic tracking-tighter">João Inácio Santiago Menezes</div>
     <div className="hidden md:flex gap-8 text-xs uppercase tracking-widest font-medium text-zinc-500">
       <a href="#about" className="hover:text-black transition-colors">Sobre</a>
       <a href="#services" className="hover:text-black transition-colors">O que faço</a>
@@ -102,7 +102,7 @@ const Navbar = () => (
 
 const SectionTitle = ({ title, subtitle }: { title: string, subtitle?: string }) => (
   <div className="mb-16">
-    <motion.h2 
+    <motion.h2
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -111,7 +111,7 @@ const SectionTitle = ({ title, subtitle }: { title: string, subtitle?: string })
       {title}
     </motion.h2>
     {subtitle && (
-      <motion.p 
+      <motion.p
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -141,12 +141,12 @@ export default function App() {
               Estudante de Economia
             </span>
             <h1 className="text-6xl md:text-8xl leading-[0.9] mb-8 tracking-tighter">
-              Lucas <br /> <span className="italic">Menezes</span>
+              João Inácio <br /> <span className="italic">Santiago Menezes</span>
             </h1>
             <p className="text-xl md:text-2xl font-light text-zinc-500 mb-10 max-w-lg leading-relaxed">
-              Análise de Dados | Mercados e Inovação. <br />
+              Estudante de Economia & Web Designer. <br />
               <span className="text-base mt-4 block opacity-70">
-                "A curiosidade intelectual é o motor que transforma dados brutos em impacto social e inovação financeira."
+                "A curiosidade intelectual é o motor que transforma dados brutos em interfaces e experiências impactantes."
               </span>
             </p>
             <div className="flex flex-wrap gap-4">
@@ -158,24 +158,24 @@ export default function App() {
               </button>
             </div>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
             className="relative flex justify-center lg:justify-end"
           >
             <div className="w-full max-w-md aspect-[3/4] bg-zinc-100 rounded-[2rem] overflow-hidden relative group">
-              <img 
-                src="https://picsum.photos/seed/economist/800/1200" 
-                alt="Lucas Menezes" 
+              <img
+                src="/profile-setup.png"
+                alt="Workspace João Inácio"
                 className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
             {/* Floating Badge */}
-            <motion.div 
+            <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="absolute -bottom-6 -left-6 md:left-0 bg-white p-6 rounded-2xl shadow-xl border border-zinc-100 hidden md:block"
@@ -197,21 +197,21 @@ export default function App() {
       {/* About Section */}
       <section id="about" className="section-padding bg-soft-gray">
         <div className="max-w-6xl mx-auto">
-          <SectionTitle 
-            title="Sobre Mim" 
+          <SectionTitle
+            title="Sobre Mim"
             subtitle="Uma trajetória pautada pela análise rigorosa e pela busca incessante por soluções que conectam teoria econômica e realidade prática."
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
             <div className="space-y-6 text-lg font-light leading-relaxed text-zinc-600">
               <p>
-                Como estudante de Economia, minha paixão reside na intersecção entre a macroeconomia clássica e as novas fronteiras da tecnologia e sustentabilidade. Acredito que o futuro dos mercados financeiros está intrinsecamente ligado à nossa capacidade de interpretar tendências globais e aplicá-las ao contexto brasileiro com precisão estatística.
+                Como estudante de Economia e entusiasta de Web Design, encontro minha verdadeira paixão na intersecção entre a análise de dados complexos e a criação de interfaces modernas. Acredito que produtos digitais excepcionais nascem quando aliamos uma forte base analítica e mercadológica a um design intuitivo e clean.
               </p>
               <p>
-                Meu foco acadêmico e profissional concentra-se em análise de dados e economia internacional, buscando compreender como a inovação tecnológica pode servir como catalisador para um desenvolvimento econômico mais equitativo e ecologicamente responsável.
+                Meu foco é desenvolver visualizações e experiências de usuário (UX/UI) de alto nível que simplifiquem conceitos econômicos e de mercado, traduzindo lógica de negócios e dados socioeconômicos em produtos esteticamente impressionantes.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-8">
               <div className="p-8 bg-white rounded-3xl border border-zinc-100 shadow-sm">
                 <div className="text-4xl mb-2">04+</div>
@@ -237,11 +237,11 @@ export default function App() {
       {/* Services Section */}
       <section id="services" className="section-padding">
         <div className="max-w-6xl mx-auto">
-          <SectionTitle 
-            title="O Que Faço" 
+          <SectionTitle
+            title="O Que Faço"
             subtitle="Especialidades que combinam rigor analítico com visão estratégica de mercado."
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               { icon: <BarChart3 />, title: "Análise Econômica", desc: "Interpretação de cenários macroeconômicos e projeções de indicadores." },
@@ -249,7 +249,7 @@ export default function App() {
               { icon: <Globe2 />, title: "Mercados Globais", desc: "Estudos sobre fluxos de capitais e economia internacional." },
               { icon: <Leaf />, title: "Sustentabilidade", desc: "Pesquisa sobre inovação verde e economia circular." }
             ].map((item, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 whileHover={{ y: -10 }}
                 className="p-10 bg-white border border-zinc-100 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300"
@@ -283,7 +283,7 @@ export default function App() {
                 ))}
               </div>
             </div>
-            
+
             <div className="space-y-8">
               {skills.map((skill, i) => (
                 <div key={i}>
@@ -292,7 +292,7 @@ export default function App() {
                     <span className="text-zinc-500">{skill.level}%</span>
                   </div>
                   <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${skill.level}%` }}
                       viewport={{ once: true }}
@@ -310,14 +310,14 @@ export default function App() {
       {/* Economic Data Section */}
       <section id="data" className="section-padding">
         <div className="max-w-6xl mx-auto">
-          <SectionTitle 
-            title="Dados Econômicos" 
+          <SectionTitle
+            title="Dados Econômicos"
             subtitle="Monitoramento em tempo real dos principais indicadores que movem a economia brasileira e global."
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
             {economicIndicators.map((indicator, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -329,8 +329,8 @@ export default function App() {
                   <span className="text-xs uppercase tracking-widest font-semibold text-zinc-400">{indicator.name}</span>
                   <span className={cn(
                     "text-xs font-bold px-2 py-1 rounded-md",
-                    indicator.trend === 'up' ? "text-emerald-600 bg-emerald-50" : 
-                    indicator.trend === 'down' ? "text-rose-600 bg-rose-50" : "text-zinc-500 bg-zinc-50"
+                    indicator.trend === 'up' ? "text-emerald-600 bg-emerald-50" :
+                      indicator.trend === 'down' ? "text-rose-600 bg-rose-50" : "text-zinc-500 bg-zinc-50"
                   )}>
                     {indicator.change}
                   </span>
@@ -341,16 +341,16 @@ export default function App() {
                     <AreaChart data={indicator.sparkline.map((v, idx) => ({ v, idx }))}>
                       <defs>
                         <linearGradient id={`gradient-${i}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={indicator.trend === 'up' ? "#10b981" : "#f43f5e"} stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor={indicator.trend === 'up' ? "#10b981" : "#f43f5e"} stopOpacity={0}/>
+                          <stop offset="5%" stopColor={indicator.trend === 'up' ? "#10b981" : "#f43f5e"} stopOpacity={0.3} />
+                          <stop offset="95%" stopColor={indicator.trend === 'up' ? "#10b981" : "#f43f5e"} stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <Area 
-                        type="monotone" 
-                        dataKey="v" 
-                        stroke={indicator.trend === 'up' ? "#10b981" : indicator.trend === 'down' ? "#f43f5e" : "#71717a"} 
-                        fillOpacity={1} 
-                        fill={`url(#gradient-${i})`} 
+                      <Area
+                        type="monotone"
+                        dataKey="v"
+                        stroke={indicator.trend === 'up' ? "#10b981" : indicator.trend === 'down' ? "#f43f5e" : "#71717a"}
+                        fillOpacity={1}
+                        fill={`url(#gradient-${i})`}
                         strokeWidth={2}
                       />
                     </AreaChart>
@@ -369,7 +369,7 @@ export default function App() {
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e4e4e7" />
                     <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#a1a1aa' }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#a1a1aa' }} />
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                     />
                     <Line type="monotone" dataKey="EUA" stroke="#18181b" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
@@ -415,22 +415,22 @@ export default function App() {
       {/* News Feed Section */}
       <section id="news" className="section-padding bg-soft-gray">
         <div className="max-w-6xl mx-auto">
-          <SectionTitle 
-            title="Notícias & Insights" 
+          <SectionTitle
+            title="Notícias & Insights"
             subtitle="Curadoria das manchetes mais relevantes para entender o pulso da economia global."
           />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {newsFeed.map((news, i) => (
-              <motion.article 
+              <motion.article
                 key={i}
                 whileHover={{ y: -10 }}
                 className="bg-white rounded-[2rem] overflow-hidden border border-zinc-100 shadow-sm group"
               >
                 <div className="h-56 overflow-hidden relative">
-                  <img 
-                    src={news.image} 
-                    alt={news.title} 
+                  <img
+                    src={news.image}
+                    alt={news.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0"
                     referrerPolicy="no-referrer"
                   />
@@ -461,11 +461,11 @@ export default function App() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24">
             <div>
-              <SectionTitle 
-                title="Vamos Conversar?" 
+              <SectionTitle
+                title="Vamos Conversar?"
                 subtitle="Estou sempre aberto a novas oportunidades, colaborações em projetos de dados ou apenas uma boa discussão sobre o cenário econômico."
               />
-              
+
               <div className="space-y-8 mt-12">
                 <div className="flex items-center gap-6">
                   <div className="w-14 h-14 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-900">
@@ -476,7 +476,7 @@ export default function App() {
                     <div className="text-lg font-medium">contato@lucasmenezes.econ</div>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-4">
                   <a href="#" className="w-14 h-14 bg-zinc-900 text-white rounded-2xl flex items-center justify-center hover:bg-zinc-800 transition-colors">
                     <Linkedin size={24} />
@@ -487,22 +487,22 @@ export default function App() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-soft-gray p-10 md:p-12 rounded-[3rem] border border-zinc-100">
               <form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs uppercase tracking-widest font-bold text-zinc-400 ml-1">Nome</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder="Seu nome"
                       className="w-full px-6 py-4 bg-white border border-zinc-100 rounded-2xl focus:outline-none focus:border-zinc-400 transition-colors text-sm"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs uppercase tracking-widest font-bold text-zinc-400 ml-1">E-mail</label>
-                    <input 
-                      type="email" 
+                    <input
+                      type="email"
                       placeholder="seu@email.com"
                       className="w-full px-6 py-4 bg-white border border-zinc-100 rounded-2xl focus:outline-none focus:border-zinc-400 transition-colors text-sm"
                     />
@@ -510,7 +510,7 @@ export default function App() {
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-widest font-bold text-zinc-400 ml-1">Mensagem</label>
-                  <textarea 
+                  <textarea
                     rows={5}
                     placeholder="Como posso ajudar?"
                     className="w-full px-6 py-4 bg-white border border-zinc-100 rounded-2xl focus:outline-none focus:border-zinc-400 transition-colors text-sm resize-none"
@@ -527,12 +527,12 @@ export default function App() {
 
       {/* Footer */}
       <footer className="py-12 px-8 border-t border-zinc-100 flex flex-col md:flex-row justify-between items-center gap-6 text-zinc-400 text-xs font-medium uppercase tracking-[0.2em]">
-        <div>© 2026 Lucas Menezes. Todos os direitos reservados.</div>
+        <div>© 2026 João Inácio Santiago Menezes. Todos os direitos reservados.</div>
         <div className="flex gap-8">
           <a href="#" className="hover:text-black transition-colors">Privacy Policy</a>
           <a href="#" className="hover:text-black transition-colors">Terms of Service</a>
         </div>
-        <button 
+        <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="w-10 h-10 border border-zinc-100 rounded-full flex items-center justify-center hover:bg-zinc-50 transition-colors"
         >
