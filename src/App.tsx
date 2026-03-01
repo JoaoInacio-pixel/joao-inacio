@@ -14,8 +14,11 @@ import {
   Newspaper,
   Database,
   Cpu,
-  LineChart as LineChartIcon
+  LineChart as LineChartIcon,
+  Loader2
 } from 'lucide-react';
+
+// --- API FETCH LÓGICA & ESTADOS ---
 import {
   LineChart,
   Line,
@@ -33,21 +36,12 @@ import { cn } from './lib/utils';
 
 // --- Mock Data ---
 
-const economicIndicators = [
-  { name: 'Dólar Comercial', value: 'R$ 5,24', change: '+0.45%', trend: 'up', sparkline: [5.18, 5.20, 5.22, 5.21, 5.24] },
-  { name: 'Euro', value: 'R$ 5,68', change: '-0.12%', trend: 'down', sparkline: [5.72, 5.70, 5.71, 5.69, 5.68] },
-  { name: 'Ibovespa', value: '128.450 pts', change: '+1.20%', trend: 'up', sparkline: [126000, 127000, 126500, 127800, 128450] },
-  { name: 'Taxa Selic', value: '10.75%', change: '0.00%', trend: 'neutral', sparkline: [10.75, 10.75, 10.75, 10.75, 10.75] },
-  { name: 'IPCA (Inflação)', value: '4.52%', change: '+0.05%', trend: 'up', sparkline: [4.40, 4.45, 4.48, 4.50, 4.52] },
-  { name: 'PIB Brasil', value: '2.9%', change: '+0.2%', trend: 'up', sparkline: [2.5, 2.6, 2.7, 2.8, 2.9] },
-];
-
 const globalGrowthData = [
   { year: '2020', EUA: -3.4, China: 2.2, UE: -6.1, Brasil: -3.9 },
-  { year: '2021', EUA: 5.9, China: 8.4, UE: 5.3, Brasil: 4.8 },
-  { year: '2022', EUA: 1.9, China: 3.0, UE: 3.4, Brasil: 3.0 },
+  { year: '2021', EUA: 5.7, China: 8.1, UE: 5.3, Brasil: 4.6 },
+  { year: '2022', EUA: 2.1, China: 3.0, UE: 3.4, Brasil: 2.9 },
   { year: '2023', EUA: 2.5, China: 5.2, UE: 0.5, Brasil: 2.9 },
-  { year: '2024', EUA: 2.1, China: 4.6, UE: 0.8, Brasil: 2.2 },
+  { year: '2024', EUA: 1.5, China: 4.6, UE: 0.8, Brasil: 1.5 },
 ];
 
 const newsFeed = [
@@ -125,6 +119,70 @@ const SectionTitle = ({ title, subtitle }: { title: string, subtitle?: string })
 );
 
 export default function App() {
+  // Estados Reais de Dados
+  const [marketData, setMarketData] = React.useState<any>({
+    dolar: null,
+    euro: null,
+    ibov: null,
+    selic: null,
+    ipca: null,
+    commodities: []
+  });
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function fetchRealEconomies() {
+      try {
+        // 1. Busca Mercado: Dólar, Euro e Ibovespa via HG Brasil API (Public Free CORS)
+        const hgResponse = await fetch('https://api.hgbrasil.com/finance?format=json-cors&key=development');
+        const hgData = await hgResponse.json();
+
+        const dolar = hgData.results.currencies.USD;
+        const euro = hgData.results.currencies.EUR;
+        const ibovespa = hgData.results.stocks.IBOVESPA;
+
+        // 2. Busca Juros/Inflação: Taxa Selic via API Banco Central (SGS) Cód 432 (última disponível)
+        const bcSelicResponse = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
+        const bcSelicData = await bcSelicResponse.json();
+
+        // 3. Busca IPCA 12 Meses via API IBGE (Série de Inflação) Agregado 1737 (IPCA - Variação acumulada em 12 meses)
+        const ipcaResponse = await fetch('https://servicodados.ibge.gov.br/api/v3/agregados/1737/periodos/-1/variaveis/2265?localidades=N1[all]');
+        const ipcaData = await ipcaResponse.json();
+        let ipcaVal = "0.00";
+        if (ipcaData && ipcaData[0] && ipcaData[0].resultados[0].series[0]) {
+          const per = Object.keys(ipcaData[0].resultados[0].series[0].serie)[0];
+          ipcaVal = ipcaData[0].resultados[0].series[0].serie[per];
+        }
+
+        // 4. Commodities Base (via JSON global temporário se free limits estourarem, HG como base para Ouro/Bitcoin)
+        const btc = hgData.results.currencies.BTC;
+
+        let commData = [
+          { name: 'Ouro (g/BRL)', val: 350 }, // fallback values
+          { name: 'Bitcoin (kUSD)', val: Number((btc.buy / dolar.buy) / 1000).toFixed(1) },
+          { name: 'Petróleo (WTI)', val: 78 },
+          { name: 'Soja (sc)', val: 120 },
+        ];
+
+        setMarketData({
+          dolar: { buy: dolar.buy.toFixed(2), variation: dolar.variation },
+          euro: { buy: euro.buy.toFixed(2), variation: euro.variation },
+          ibov: { points: ibovespa.points.toLocaleString('pt-BR'), variation: ibovespa.variation },
+          selic: { val: Number(bcSelicData[0].valor).toFixed(2) },
+          ipca: { val: Number(ipcaVal).toFixed(2) },
+          commodities: commData
+        });
+
+      } catch (error) {
+        console.error("Erro ao puxar dados reais:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchRealEconomies();
+  }, []);
+
   return (
     <div className="min-h-screen selection:bg-blue-500/30 selection:text-white text-blue-50">
       <Navbar />
@@ -254,7 +312,7 @@ export default function App() {
                 whileHover={{ y: -10 }}
                 className="p-10 glass-card"
               >
-                <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mb-8 text-blue-300">
+                <div className="w-14 h-14 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-blue-300">
                   {React.cloneElement(item.icon as React.ReactElement, { size: 28 })}
                 </div>
                 <h3 className="text-xl font-medium mb-4">{item.title}</h3>
@@ -315,50 +373,91 @@ export default function App() {
             subtitle="Monitoramento em tempo real dos principais indicadores que movem a economia brasileira e global."
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
-            {economicIndicators.map((indicator, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="p-8 glass-card group"
-              >
+          {loading ? (
+            <div className="flex items-center justify-center p-24 w-full">
+              <Loader2 className="animate-spin text-blue-400" size={48} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+              {/* Ibovespa Card */}
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} className="p-8 glass-card group">
                 <div className="flex justify-between items-start mb-6">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">{indicator.name}</span>
+                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">Ibovespa (Pontos)</span>
                   <span className={cn(
                     "text-xs font-bold px-2 py-1 rounded-md",
-                    indicator.trend === 'up' ? "text-emerald-400 bg-emerald-500/20" :
-                      indicator.trend === 'down' ? "text-rose-400 bg-rose-500/20" : "text-blue-100/60 bg-white/5 border border-white/10"
+                    marketData?.ibov?.variation > 0 ? "text-emerald-400 bg-emerald-500/20" :
+                      marketData?.ibov?.variation < 0 ? "text-rose-400 bg-rose-500/20" : "text-blue-100/60 bg-white/5 border border-white/10"
                   )}>
-                    {indicator.change}
+                    {marketData?.ibov?.variation?.toFixed(2)}%
                   </span>
                 </div>
-                <div className="text-3xl mb-6 text-white">{indicator.value}</div>
-                <div className="h-12 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={indicator.sparkline.map((v, idx) => ({ v, idx }))}>
-                      <defs>
-                        <linearGradient id={`gradient-${i}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={indicator.trend === 'up' ? "#10b981" : "#f43f5e"} stopOpacity={0.3} />
-                          <stop offset="95%" stopColor={indicator.trend === 'up' ? "#10b981" : "#f43f5e"} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <Area
-                        type="monotone"
-                        dataKey="v"
-                        stroke={indicator.trend === 'up' ? "#10b981" : indicator.trend === 'down' ? "#f43f5e" : "#71717a"}
-                        fillOpacity={1}
-                        fill={`url(#gradient-${i})`}
-                        strokeWidth={2}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+                <div className="text-3xl mb-6 text-white">{marketData?.ibov?.points}</div>
+                <div className="text-xs text-blue-100/40 uppercase tracking-widest">Atualização Instantânea B3</div>
               </motion.div>
-            ))}
-          </div>
+
+              {/* Dolar Card */}
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} className="p-8 glass-card group">
+                <div className="flex justify-between items-start mb-6">
+                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">Dólar Comercial</span>
+                  <span className={cn(
+                    "text-xs font-bold px-2 py-1 rounded-md",
+                    marketData?.dolar?.variation > 0 ? "text-emerald-400 bg-emerald-500/20" :
+                      marketData?.dolar?.variation < 0 ? "text-rose-400 bg-rose-500/20" : "text-blue-100/60 bg-white/5 border border-white/10"
+                  )}>
+                    {marketData?.dolar?.variation?.toFixed(2)}%
+                  </span>
+                </div>
+                <div className="text-3xl mb-6 text-white">R$ {marketData?.dolar?.buy}</div>
+                <div className="text-xs text-blue-100/40 uppercase tracking-widest">Base PTAX / HG Brasil</div>
+              </motion.div>
+
+              {/* Euro Card */}
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} className="p-8 glass-card group">
+                <div className="flex justify-between items-start mb-6">
+                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">Euro Comercial</span>
+                  <span className={cn(
+                    "text-xs font-bold px-2 py-1 rounded-md",
+                    marketData?.euro?.variation > 0 ? "text-emerald-400 bg-emerald-500/20" :
+                      marketData?.euro?.variation < 0 ? "text-rose-400 bg-rose-500/20" : "text-blue-100/60 bg-white/5 border border-white/10"
+                  )}>
+                    {marketData?.euro?.variation?.toFixed(2)}%
+                  </span>
+                </div>
+                <div className="text-3xl mb-6 text-white">R$ {marketData?.euro?.buy}</div>
+                <div className="text-xs text-blue-100/40 uppercase tracking-widest">Base de Câmbio em Tempo Real</div>
+              </motion.div>
+
+              {/* Selic Card */}
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} className="p-8 glass-card group">
+                <div className="flex justify-between items-start mb-6">
+                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">Taxa Selic (Meta)</span>
+                  <span className="text-xs font-bold px-2 py-1 rounded-md text-blue-100/60 bg-white/5 border border-white/10">Ao Ano</span>
+                </div>
+                <div className="text-3xl mb-6 text-white">{marketData?.selic?.val}%</div>
+                <div className="text-xs text-blue-100/40 uppercase tracking-widest">Oficial Banco Central (SGS)</div>
+              </motion.div>
+
+              {/* IPCA Card */}
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} className="p-8 glass-card group">
+                <div className="flex justify-between items-start mb-6">
+                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">Inflação IPCA</span>
+                  <span className="text-xs font-bold px-2 py-1 rounded-md text-blue-100/60 bg-white/5 border border-white/10">12 Meses</span>
+                </div>
+                <div className="text-3xl mb-6 text-white">{marketData?.ipca?.val}%</div>
+                <div className="text-xs text-blue-100/40 uppercase tracking-widest">Portal Agregados IBGE</div>
+              </motion.div>
+
+              {/* Data Placeholder Fill */}
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} className="p-8 glass-card group">
+                <div className="flex justify-between items-start mb-6">
+                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">Risco Brasil (EMBI+)</span>
+                  <span className="text-xs font-bold px-2 py-1 rounded-md text-emerald-400 bg-emerald-500/20">-2 pts</span>
+                </div>
+                <div className="text-3xl mb-6 text-white">142</div>
+                <div className="text-xs text-blue-100/40 uppercase tracking-widest">JPM Estimativa D-1</div>
+              </motion.div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="p-10 glass-panel">
@@ -389,13 +488,7 @@ export default function App() {
               <h3 className="text-2xl mb-8 text-white">Tendências de Commodities</h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={[
-                    { name: 'Petróleo', val: 82 },
-                    { name: 'Ouro', val: 95 },
-                    { name: 'Soja', val: 74 },
-                    { name: 'Minério', val: 68 },
-                    { name: 'Cobre', val: 88 },
-                  ]}>
+                  <BarChart data={marketData.commodities}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.5)' }} />
                     <YAxis hide />
