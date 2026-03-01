@@ -132,52 +132,62 @@ export default function App() {
 
   React.useEffect(() => {
     async function fetchRealEconomies() {
-      try {
-        // 1. Busca Mercado: Dólar, Euro e Ibovespa via HG Brasil API (Public Free CORS)
-        const hgResponse = await fetch('https://api.hgbrasil.com/finance?format=json-cors&key=development');
-        const hgData = await hgResponse.json();
-
-        const dolar = hgData.results.currencies.USD;
-        const euro = hgData.results.currencies.EUR;
-        const ibovespa = hgData.results.stocks.IBOVESPA;
-
-        // 2. Busca Juros/Inflação: Taxa Selic via API Banco Central (SGS) Cód 432 (última disponível)
-        const bcSelicResponse = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
-        const bcSelicData = await bcSelicResponse.json();
-
-        // 3. Busca IPCA 12 Meses via API IBGE (Série de Inflação) Agregado 1737 (IPCA - Variação acumulada em 12 meses)
-        const ipcaResponse = await fetch('https://servicodados.ibge.gov.br/api/v3/agregados/1737/periodos/-1/variaveis/2265?localidades=N1[all]');
-        const ipcaData = await ipcaResponse.json();
-        let ipcaVal = "0.00";
-        if (ipcaData && ipcaData[0] && ipcaData[0].resultados[0].series[0]) {
-          const per = Object.keys(ipcaData[0].resultados[0].series[0].serie)[0];
-          ipcaVal = ipcaData[0].resultados[0].series[0].serie[per];
-        }
-
-        // 4. Commodities Base (via JSON global temporário se free limits estourarem, HG como base para Ouro/Bitcoin)
-        const btc = hgData.results.currencies.BTC;
-
-        let commData = [
-          { name: 'Ouro (g/BRL)', val: 350 }, // fallback values
-          { name: 'Bitcoin (kUSD)', val: Number((btc.buy / dolar.buy) / 1000).toFixed(1) },
+      // 1. Lógica de Fallback de Dados Essenciais (Para evitar tela em branco caso as APIs sejam bloqueadas por CORS no Vercel)
+      let fetchedData = {
+        dolar: { buy: '5.05', variation: 0.2 },
+        euro: { buy: '5.55', variation: -0.1 },
+        ibov: { points: '128.500', variation: 1.2 },
+        selic: { val: '10.75' },
+        ipca: { val: '4.50' },
+        commodities: [
+          { name: 'Ouro (g/BRL)', val: 350 },
+          { name: 'Bitcoin (kUSD)', val: 65 },
           { name: 'Petróleo (WTI)', val: 78 },
           { name: 'Soja (sc)', val: 120 },
-        ];
+        ]
+      };
 
-        setMarketData({
-          dolar: { buy: dolar.buy.toFixed(2), variation: dolar.variation },
-          euro: { buy: euro.buy.toFixed(2), variation: euro.variation },
-          ibov: { points: ibovespa.points.toLocaleString('pt-BR'), variation: ibovespa.variation },
-          selic: { val: Number(bcSelicData[0].valor).toFixed(2) },
-          ipca: { val: Number(ipcaVal).toFixed(2) },
-          commodities: commData
-        });
+      try {
+        // Tenta buscar HG Brasil (Dólar, Euro, Ibovespa). Algumas chaves de API barram Vercel domains por CORS.
+        const hgResponse = await fetch('https://api.hgbrasil.com/finance?format=json-cors');
+        if (hgResponse.ok) {
+          const hgData = await hgResponse.json();
+          const dolar = hgData.results.currencies.USD;
+          const euro = hgData.results.currencies.EUR;
+          const ibovespa = hgData.results.stocks.IBOVESPA;
+          const btc = hgData.results.currencies.BTC;
 
-      } catch (error) {
-        console.error("Erro ao puxar dados reais:", error);
-      } finally {
-        setLoading(false);
-      }
+          fetchedData.dolar = { buy: dolar.buy.toFixed(2), variation: dolar.variation };
+          fetchedData.euro = { buy: euro.buy.toFixed(2), variation: euro.variation };
+          fetchedData.ibov = { points: ibovespa.points.toLocaleString('pt-BR'), variation: ibovespa.variation };
+          fetchedData.commodities[1].val = Number(Number((btc.buy / dolar.buy) / 1000).toFixed(1));
+        }
+      } catch (error) { console.error("HG Brasil CORS Limit ou Error:", error); }
+
+      try {
+        // Tenta buscar Taxa Selic no Banco Central
+        const bcSelicResponse = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
+        if (bcSelicResponse.ok) {
+          const bcSelicData = await bcSelicResponse.json();
+          fetchedData.selic = { val: Number(bcSelicData[0].valor).toFixed(2) };
+        }
+      } catch (error) { console.error("BCB Selic Error:", error); }
+
+      try {
+        // Tenta buscar Inflação no IBGE
+        const ipcaResponse = await fetch('https://servicodados.ibge.gov.br/api/v3/agregados/1737/periodos/-1/variaveis/2265?localidades=N1[all]');
+        if (ipcaResponse.ok) {
+          const ipcaData = await ipcaResponse.json();
+          if (ipcaData && ipcaData[0] && ipcaData[0].resultados[0].series[0]) {
+            const per = Object.keys(ipcaData[0].resultados[0].series[0].serie)[0];
+            fetchedData.ipca = { val: Number(ipcaData[0].resultados[0].series[0].serie[per]).toFixed(2) };
+          }
+        }
+      } catch (error) { console.error("IBGE IPCA Error:", error); }
+
+      // Atualiza o state uma única vez com os dados originais se falharam, ou os reais se deram certo!
+      setMarketData(fetchedData);
+      setLoading(false);
     }
 
     fetchRealEconomies();
