@@ -30,19 +30,10 @@ import {
   AreaChart,
   Area,
   BarChart,
-  Bar
+  Bar,
+  Cell
 } from 'recharts';
 import { cn } from './lib/utils';
-
-// --- Mock Data ---
-
-const globalGrowthData = [
-  { year: '2020', EUA: -3.4, China: 2.2, UE: -6.1, Brasil: -3.9 },
-  { year: '2021', EUA: 5.7, China: 8.1, UE: 5.3, Brasil: 4.6 },
-  { year: '2022', EUA: 2.1, China: 3.0, UE: 3.4, Brasil: 2.9 },
-  { year: '2023', EUA: 2.5, China: 5.2, UE: 0.5, Brasil: 2.9 },
-  { year: '2024', EUA: 1.5, China: 4.6, UE: 0.8, Brasil: 1.5 },
-];
 
 const newsFeed = [
   {
@@ -126,46 +117,63 @@ export default function App() {
     ibov: null,
     selic: null,
     ipca: null,
-    commodities: []
+    reservas: null,
+    dailyTrends: [],
+    gdp: []
   });
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     async function fetchRealEconomies() {
-      // 1. Lógica de Fallback de Dados Essenciais (Para evitar tela em branco caso as APIs sejam bloqueadas por CORS no Vercel)
+      // 1. Lógica de Fallback de Dados Essenciais (Garante interface imune a CORS/Quedas de API)
       let fetchedData = {
         dolar: { buy: '5.05', variation: 0.2 },
         euro: { buy: '5.55', variation: -0.1 },
         ibov: { points: '128.500', variation: 1.2 },
         selic: { val: '10.75' },
         ipca: { val: '4.50' },
-        commodities: [
-          { name: 'Ouro (g/BRL)', val: 350 },
-          { name: 'Bitcoin (kUSD)', val: 65 },
-          { name: 'Petróleo (WTI)', val: 78 },
-          { name: 'Soja (sc)', val: 120 },
+        reservas: { val: '355.2' },
+        dailyTrends: [
+          { name: 'Dólar', val: 0.2 },
+          { name: 'Euro', val: -0.1 },
+          { name: 'Ibovespa', val: 1.2 },
+          { name: 'Bitcoin', val: 0.5 }
+        ],
+        gdp: [
+          { year: '2020', EUA: -2.2, China: 2.2, Brasil: -3.3 },
+          { year: '2021', EUA: 5.8, China: 8.4, Brasil: 4.6 },
+          { year: '2022', EUA: 1.9, China: 3.0, Brasil: 2.9 },
+          { year: '2023', EUA: 2.5, China: 5.2, Brasil: 2.9 },
+          { year: '2024', EUA: 1.5, China: 4.6, Brasil: 1.5 }
         ]
       };
 
+      // 1. Câmbios via AwesomeAPI (Sem block de CORS, 100% Pùblica e Livre)
       try {
-        // Tenta buscar HG Brasil (Dólar, Euro, Ibovespa). Algumas chaves de API barram Vercel domains por CORS.
+        const aweRes = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL,BTC-BRL');
+        if (aweRes.ok) {
+          const aweData = await aweRes.json();
+          fetchedData.dolar = { buy: Number(aweData.USDBRL.ask).toFixed(2), variation: Number(aweData.USDBRL.pctChange) };
+          fetchedData.euro = { buy: Number(aweData.EURBRL.ask).toFixed(2), variation: Number(aweData.EURBRL.pctChange) };
+          fetchedData.dailyTrends[0].val = Number(aweData.USDBRL.pctChange);
+          fetchedData.dailyTrends[1].val = Number(aweData.EURBRL.pctChange);
+          fetchedData.dailyTrends[3].val = Number(aweData.BTCBRL.pctChange);
+        }
+      } catch (error) { console.error("AwesomeAPI Error:", error); }
+
+      // 2. Ibovespa via HG Brasil
+      try {
         const hgResponse = await fetch('https://api.hgbrasil.com/finance?format=json-cors');
         if (hgResponse.ok) {
           const hgData = await hgResponse.json();
-          const dolar = hgData.results.currencies.USD;
-          const euro = hgData.results.currencies.EUR;
           const ibovespa = hgData.results.stocks.IBOVESPA;
-          const btc = hgData.results.currencies.BTC;
-
-          fetchedData.dolar = { buy: dolar.buy.toFixed(2), variation: dolar.variation };
-          fetchedData.euro = { buy: euro.buy.toFixed(2), variation: euro.variation };
           fetchedData.ibov = { points: ibovespa.points.toLocaleString('pt-BR'), variation: ibovespa.variation };
-          fetchedData.commodities[1].val = Number(Number((btc.buy / dolar.buy) / 1000).toFixed(1));
+          fetchedData.dailyTrends[2].val = Number(ibovespa.variation);
         }
-      } catch (error) { console.error("HG Brasil CORS Limit ou Error:", error); }
+      } catch (error) { console.error("HG Brasil Error:", error); }
 
+      // 3. Taxa Selic no Banco Central
       try {
-        // Tenta buscar Taxa Selic no Banco Central
         const bcSelicResponse = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
         if (bcSelicResponse.ok) {
           const bcSelicData = await bcSelicResponse.json();
@@ -173,8 +181,17 @@ export default function App() {
         }
       } catch (error) { console.error("BCB Selic Error:", error); }
 
+      // 4. Reservas Internacionais no Banco Central (SGS 13621)
       try {
-        // Tenta buscar Inflação no IBGE
+        const reservasResponse = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.13621/dados/ultimos/1?formato=json');
+        if (reservasResponse.ok) {
+          const reservasData = await reservasResponse.json();
+          fetchedData.reservas = { val: (Number(reservasData[0].valor) / 1000).toFixed(1) };
+        }
+      } catch (error) { console.error("BCB Reservas Error:", error); }
+
+      // 5. Inflação no IBGE
+      try {
         const ipcaResponse = await fetch('https://servicodados.ibge.gov.br/api/v3/agregados/1737/periodos/-1/variaveis/2265?localidades=N1[all]');
         if (ipcaResponse.ok) {
           const ipcaData = await ipcaResponse.json();
@@ -185,7 +202,25 @@ export default function App() {
         }
       } catch (error) { console.error("IBGE IPCA Error:", error); }
 
-      // Atualiza o state uma única vez com os dados originais se falharam, ou os reais se deram certo!
+      // 6. PIB Global (World Bank) Histórico Real Multipaís
+      try {
+        const wbRes = await fetch('https://api.worldbank.org/v2/country/USA;CHN;BRA/indicator/NY.GDP.MKTP.KD.ZG?format=json&per_page=100&date=2020:2024');
+        if (wbRes.ok) {
+          const wbData = await wbRes.json();
+          const records = wbData[1];
+          if (records && records.length > 0) {
+            const grouped: any = {};
+            records.forEach((r: any) => {
+              if (!grouped[r.date]) grouped[r.date] = { year: r.date };
+              if (r.countryiso3code === 'USA') grouped[r.date].EUA = r.value !== null ? Number(r.value.toFixed(1)) : null;
+              if (r.countryiso3code === 'CHN') grouped[r.date].China = r.value !== null ? Number(r.value.toFixed(1)) : null;
+              if (r.countryiso3code === 'BRA') grouped[r.date].Brasil = r.value !== null ? Number(r.value.toFixed(1)) : null;
+            });
+            fetchedData.gdp = Object.values(grouped).sort((a: any, b: any) => a.year.localeCompare(b.year)) as any;
+          }
+        }
+      } catch (error) { console.error("World Bank GDP Error:", error); }
+
       setMarketData(fetchedData);
       setLoading(false);
     }
@@ -457,24 +492,24 @@ export default function App() {
                 <div className="text-xs text-blue-100/40 uppercase tracking-widest">Portal Agregados IBGE</div>
               </motion.div>
 
-              {/* Data Placeholder Fill */}
+              {/* Reservas Internacionais Card (Substitui Placeholder) */}
               <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} className="p-8 glass-card group">
                 <div className="flex justify-between items-start mb-6">
-                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">Risco Brasil (EMBI+)</span>
-                  <span className="text-xs font-bold px-2 py-1 rounded-md text-emerald-400 bg-emerald-500/20">-2 pts</span>
+                  <span className="text-xs uppercase tracking-widest font-semibold text-blue-200/50">Reservas Intern.</span>
+                  <span className="text-xs font-bold px-2 py-1 rounded-md text-emerald-400 bg-emerald-500/20">Sólidas</span>
                 </div>
-                <div className="text-3xl mb-6 text-white">142</div>
-                <div className="text-xs text-blue-100/40 uppercase tracking-widest">JPM Estimativa D-1</div>
+                <div className="text-3xl mb-6 text-white">US$ {marketData?.reservas?.val} Bi</div>
+                <div className="text-xs text-blue-100/40 uppercase tracking-widest">Oficial Banco Central (SGS)</div>
               </motion.div>
             </div>
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="p-10 glass-panel">
-              <h3 className="text-2xl mb-8 text-white">Crescimento do PIB Global (%)</h3>
+              <h3 className="text-2xl mb-8 text-white">Crescimento do PIB Mundial (%)</h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={globalGrowthData}>
+                  <LineChart data={marketData.gdp}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
                     <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.5)' }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.5)' }} />
@@ -495,20 +530,26 @@ export default function App() {
             </div>
 
             <div className="p-10 glass-panel">
-              <h3 className="text-2xl mb-8 text-white">Tendências de Commodities</h3>
+              <h3 className="text-2xl mb-8 text-white">Variações Diárias (%)</h3>
               <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={marketData.commodities}>
+                  <BarChart data={marketData.dailyTrends}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.5)' }} />
-                    <YAxis hide />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'rgba(255,255,255,0.5)' }} />
                     <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(10px)', color: '#fff' }} />
-                    <Bar dataKey="val" fill="#3b82f6" radius={[10, 10, 0, 0]} barSize={40} />
+                    <Bar dataKey="val" radius={[10, 10, 0, 0]} barSize={40}>
+                      {
+                        marketData.dailyTrends?.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={entry.val >= 0 ? '#10b981' : '#f43f5e'} />
+                        ))
+                      }
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
               <p className="mt-8 text-sm text-zinc-400 text-center italic">
-                * Valores normalizados para visualização de tendência relativa.
+                * Monitoramento em tempo real do fôlego dos principais ativos ao longo do dia.
               </p>
             </div>
           </div>
